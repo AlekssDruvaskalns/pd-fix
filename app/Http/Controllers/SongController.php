@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Song;
+use App\Models\Playlist;
 
 class SongController extends Controller
 {
@@ -39,7 +40,7 @@ class SongController extends Controller
             'genre' => $request->input('genre')
         ]);
 
-        return redirect('/song'); //--------------Šo vajadzēs samainīt!!!!!!
+        return redirect('/song'); //--  ------------Šo vajadzēs samainīt!!!!!!
     }
 
     /**
@@ -47,7 +48,8 @@ class SongController extends Controller
      */
     public function show(Song $song)
     {
-       return view('song.show', ['song' => $song]);
+        $allPlaylist = Playlist::all();
+        return view('song.show', ['allplaylists' => $allPlaylist], ['song' => $song]);
     }
 
     /**
@@ -96,4 +98,22 @@ class SongController extends Controller
 
         return redirect('/song'); //--------------Šo vajadzēs samainīt!!!!!!
     }
+
+
+
+    public function addPlaylist(Request $request, Song $song) {
+        if ($song->playlists->contains($request['playlist'])) {
+            return redirect()->back()->with('error', 'Playlist is already in the playlist.');
+        }
+
+        $song->playlists()->attach($request['playlist']);
+        return redirect('/song/' . $song->id)->with('success', 'Playlist added successfully!');
+    }
+
+    public function removePlaylist(Request $request, Song $song){
+        $song->playlists()->detach($request['playlist']);
+        return redirect('/song/' . $song->id)->with('success', 'Playlist removed successfully!');
+    }
+
+
 }
